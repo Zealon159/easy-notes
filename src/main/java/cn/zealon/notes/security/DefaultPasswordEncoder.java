@@ -1,5 +1,6 @@
 package cn.zealon.notes.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -11,9 +12,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class DefaultPasswordEncoder implements PasswordEncoder {
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public String encode(CharSequence rawPassword) {
-        return rawPassword.toString();
+        return passwordEncoder.encode(rawPassword.toString());
     }
 
     @Override

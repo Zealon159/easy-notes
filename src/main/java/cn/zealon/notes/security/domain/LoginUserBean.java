@@ -14,7 +14,8 @@ import java.util.Collection;
  * @since: 2020/11/17
  */
 @Data
-public class LoginUser implements UserDetails, CredentialsContainer {
+public class LoginUserBean implements UserDetails, CredentialsContainer {
+
     private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
 
     /**
@@ -34,30 +35,34 @@ public class LoginUser implements UserDetails, CredentialsContainer {
      */
     //private LoginType loginType;
 
-    public LoginUser() {
+    public LoginUserBean() {
     }
-    public LoginUser(UserVO user, String loginIp, LocalDateTime loginTime) {
+    public LoginUserBean(UserVO user, String loginIp, LocalDateTime loginTime) {
         this.user = user;
         this.loginIp = loginIp;
         this.loginTime = loginTime;
     }
-    public LoginUser(UserVO user, String loginIp, LocalDateTime loginTime, String loginType) {
+    public LoginUserBean(UserVO user, String loginIp, LocalDateTime loginTime, String loginType) {
         this.user = user;
         this.loginIp = loginIp;
         this.loginTime = loginTime;
     }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;
     }
+
     @Override
     public String getPassword() {
         return user.getPassword();
     }
+
     @Override
     public String getUsername() {
         return user.getUserName();
     }
+
     /**
      * 账户是否未过期，过期无法验证
      */
@@ -65,6 +70,7 @@ public class LoginUser implements UserDetails, CredentialsContainer {
     public boolean isAccountNonExpired() {
         return true;
     }
+
     /**
      * 指定用户是否解锁，锁定的用户无法进行身份验证
      * <p>
@@ -73,8 +79,9 @@ public class LoginUser implements UserDetails, CredentialsContainer {
      */
     @Override
     public boolean isAccountNonLocked() {
-        return user.getPwdLock() == 1;
+        return user.getPwdLock() == 0;
     }
+
     /**
      * 指示是否已过期的用户的凭据(密码)，过期的凭据防止认证
      */
@@ -90,6 +97,7 @@ public class LoginUser implements UserDetails, CredentialsContainer {
     public boolean isEnabled() {
         return user.getEnable() == 1;
     }
+
     /**
      * 认证完成后，擦除密码
      */

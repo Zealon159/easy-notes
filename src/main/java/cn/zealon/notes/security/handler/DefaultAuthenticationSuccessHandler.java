@@ -1,6 +1,7 @@
 package cn.zealon.notes.security.handler;
 
 import cn.zealon.notes.common.result.ResultUtil;
+import cn.zealon.notes.security.domain.LoginUserBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,9 @@ public class DefaultAuthenticationSuccessHandler implements AuthenticationSucces
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        log.info("登录成功");
+        LoginUserBean loginUser = (LoginUserBean) authentication.getPrincipal();
+        log.info("用户[{}]登录成功", loginUser.getUsername());
         response.setContentType("application/json;charset=utf-8");
-        response.getWriter().write(objectMapper.writeValueAsString(ResultUtil.success(authentication)));
+        response.getWriter().write(objectMapper.writeValueAsString(ResultUtil.success(loginUser.getUser())));
     }
 }

@@ -1,6 +1,7 @@
 package cn.zealon.notes.security.handler;
 
 import cn.zealon.notes.common.result.ResultUtil;
+import cn.zealon.notes.security.domain.LoginUserBean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,11 @@ public class DefaultLogoutSuccessHandler implements LogoutSuccessHandler {
 
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        log.info("{}退出系统", authentication.getPrincipal());
+        if (authentication != null) {
+            LoginUserBean loginUserBean = (LoginUserBean) authentication.getPrincipal();
+            String username = loginUserBean.getUsername();
+            log.info("用户[{}]退出系统", username);
+        }
         response.setContentType("application/json;charset=utf-8");
         response.getWriter().write(objectMapper.writeValueAsString(ResultUtil.success()));
     }

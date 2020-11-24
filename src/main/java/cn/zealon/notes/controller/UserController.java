@@ -1,5 +1,6 @@
 package cn.zealon.notes.controller;
 
+import cn.zealon.notes.security.domain.LoginUserBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ public class UserController {
     @GetMapping("/info")
     @ResponseBody
     public Object getCurrentUser(Authentication authentication) {
-        return authentication;
+        LoginUserBean loginUser = (LoginUserBean) authentication.getPrincipal();
+        return loginUser.getUser();
     }
 }

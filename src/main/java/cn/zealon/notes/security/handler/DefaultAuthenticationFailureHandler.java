@@ -30,7 +30,7 @@ public class DefaultAuthenticationFailureHandler implements AuthenticationFailur
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException e) throws IOException, ServletException {
         Result result;
-        String username = request.getParameter("username");
+        String username = (String) request.getAttribute("username");
         if (e instanceof BadCredentialsException) {
             // 密码错误
             log.info("[登录失败] - 用户[{}]密码错误", username);
