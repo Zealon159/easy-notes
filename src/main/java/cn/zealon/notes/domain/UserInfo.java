@@ -1,4 +1,4 @@
-package cn.zealon.notes.vo;
+package cn.zealon.notes.domain;
 
 import lombok.Data;
 
@@ -7,7 +7,7 @@ import lombok.Data;
  * @since: 2020/11/17
  */
 @Data
-public class UserVO {
+public class UserInfo {
     private String userId;
     private String userName;
     private String password;

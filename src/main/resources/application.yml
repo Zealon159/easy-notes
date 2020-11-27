@@ -3,9 +3,12 @@ server:
 
 spring:
   security:
-    user:
-      name: admin
-      password: pass
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: d2456e0d3f62d5838fb2
+            clientSecret: 60ec6d3c4dcf47281fe06124da535faf33cb17ec
 
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
@@ -20,5 +23,15 @@ mybatis:
   mapper-locations: classpath*:mappers/*.xml
 
 jwt:
-  header: 123
-  tokenHead: fd2
+  secret: ji934fsfS9fA01eoPq23
+  expiration: 3600000
+  header: JWTHeaderName
+
+oauth-client:
+  github:
+    client-id: d2456e0d3f62d5838fb2
+    client-secret: 60ec6d3c4dcf47281fe06124da535faf33cb17ec
+    access-token-uri: https://github.com/login/oauth/access_token
+    user-authorization-uri: https://github.com/login/oauth/authorize
+    resource:
+      user-info-uri: https://api.github.com/user

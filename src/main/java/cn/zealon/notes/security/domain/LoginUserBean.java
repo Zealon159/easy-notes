@@ -1,6 +1,6 @@
 package cn.zealon.notes.security.domain;
 
-import cn.zealon.notes.vo.UserVO;
+import cn.zealon.notes.domain.UserInfo;
 import lombok.Data;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,7 +21,7 @@ public class LoginUserBean implements UserDetails, CredentialsContainer {
     /**
      * 用户
      */
-    private UserVO user;
+    private UserInfo user;
     /**
      * 登录ip
      */
@@ -37,12 +37,12 @@ public class LoginUserBean implements UserDetails, CredentialsContainer {
 
     public LoginUserBean() {
     }
-    public LoginUserBean(UserVO user, String loginIp, LocalDateTime loginTime) {
+    public LoginUserBean(UserInfo user, String loginIp, LocalDateTime loginTime) {
         this.user = user;
         this.loginIp = loginIp;
         this.loginTime = loginTime;
     }
-    public LoginUserBean(UserVO user, String loginIp, LocalDateTime loginTime, String loginType) {
+    public LoginUserBean(UserInfo user, String loginIp, LocalDateTime loginTime, String loginType) {
         this.user = user;
         this.loginIp = loginIp;
         this.loginTime = loginTime;

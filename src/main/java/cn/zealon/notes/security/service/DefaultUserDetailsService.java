@@ -1,8 +1,8 @@
-package cn.zealon.notes.security;
+package cn.zealon.notes.security.service;
 
 import cn.zealon.notes.security.domain.LoginUserBean;
 import cn.zealon.notes.service.UserService;
-import cn.zealon.notes.vo.UserVO;
+import cn.zealon.notes.domain.UserInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class DefaultUserDetailsService implements UserDetailsService {
         }
 
         // 查出用户信息
-        UserVO userVO = userService.getUserByUserId(username);
+        UserInfo userVO = userService.getUserByUserId(username);
         if (userVO == null) {
             log.info("用户[{}]登录失败，用户名不存在", username);
             throw new UsernameNotFoundException("登录用户：" + username + " 不存在");

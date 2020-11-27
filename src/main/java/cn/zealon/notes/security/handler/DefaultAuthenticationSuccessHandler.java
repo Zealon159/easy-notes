@@ -29,6 +29,7 @@ public class DefaultAuthenticationSuccessHandler implements AuthenticationSucces
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         LoginUserBean loginUser = (LoginUserBean) authentication.getPrincipal();
         log.info("用户[{}]登录成功", loginUser.getUsername());
+
         response.setContentType("application/json;charset=utf-8");
         response.getWriter().write(objectMapper.writeValueAsString(ResultUtil.success(loginUser.getUser())));
     }

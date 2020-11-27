@@ -1,9 +1,8 @@
 package cn.zealon.notes.service;
 
-import cn.zealon.notes.security.DefaultPasswordEncoder;
-import cn.zealon.notes.vo.UserVO;
+import cn.zealon.notes.security.config.DefaultPasswordEncoder;
+import cn.zealon.notes.domain.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -16,9 +15,9 @@ public class UserService {
     @Autowired
     private DefaultPasswordEncoder defaultPasswordEncoder;
 
-    public UserVO getUserByUserId(String userId){
+    public UserInfo getUserByUserId(String userId){
         if (userId.equals("zealon")) {
-            UserVO user = new UserVO();
+            UserInfo user = new UserInfo();
             user.setUserId(userId);
             user.setPwdLock(0);
             user.setEnable(1);
@@ -26,7 +25,7 @@ public class UserService {
             user.setPassword(defaultPasswordEncoder.encode("pass"));
             return user;
         } else if (userId.equals("zealon2")) {
-            UserVO user = new UserVO();
+            UserInfo user = new UserInfo();
             user.setUserId(userId);
             user.setPwdLock(1);
             user.setEnable(1);

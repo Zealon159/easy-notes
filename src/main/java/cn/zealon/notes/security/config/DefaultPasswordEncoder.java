@@ -1,4 +1,4 @@
-package cn.zealon.notes.security;
+package cn.zealon.notes.security.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
