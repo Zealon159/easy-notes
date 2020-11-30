@@ -4,6 +4,7 @@ import cn.zealon.notes.security.domain.LoginUserBean;
 import cn.zealon.notes.security.jwt.JwtTokenUtil;
 import cn.zealon.notes.security.service.DefaultUserDetailsService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -36,6 +37,11 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            Object principal = authentication.getPrincipal();
+        }
+
         String jwtToken = request.getHeader(jwtTokenUtil.getHeader());
         if(!StringUtils.isEmpty(jwtToken)){
             String username = jwtTokenUtil.getUsernameFromToken(jwtToken);
@@ -52,6 +58,8 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                 }
             }
         }
+
+
 
         filterChain.doFilter(request, response);
     }

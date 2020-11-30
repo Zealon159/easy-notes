@@ -1,6 +1,7 @@
 server:
   port: 8080
 
+
 spring:
   security:
     oauth2:
@@ -9,6 +10,9 @@ spring:
           github:
             clientId: d2456e0d3f62d5838fb2
             clientSecret: 60ec6d3c4dcf47281fe06124da535faf33cb17ec
+          qq:
+            clientId: qqe
+            clientSecret: 32
 
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
@@ -35,3 +39,5 @@ oauth-client:
     user-authorization-uri: https://github.com/login/oauth/authorize
     resource:
       user-info-uri: https://api.github.com/user
+
+debug: true

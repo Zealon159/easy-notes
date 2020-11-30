@@ -32,6 +32,14 @@ public class UserService {
             user.setUserName("便携笔记2");
             user.setPassword(defaultPasswordEncoder.encode("pass"));
             return user;
+        }  else if (userId.equals("Zealon159")) {
+            UserInfo user = new UserInfo();
+            user.setUserId(userId);
+            user.setPwdLock(0);
+            user.setEnable(1);
+            user.setUserName("年轻的Alex");
+            user.setPassword(defaultPasswordEncoder.encode("pass"));
+            return user;
         }
         return null;
     }

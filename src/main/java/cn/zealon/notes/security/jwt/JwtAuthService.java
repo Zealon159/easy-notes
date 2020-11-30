@@ -1,7 +1,6 @@
 package cn.zealon.notes.security.jwt;
 
 import cn.zealon.notes.common.exception.CustomException;
-import cn.zealon.notes.common.exception.CustomExceptionType;
 import cn.zealon.notes.common.result.HttpCodeEnum;
 import cn.zealon.notes.common.result.Result;
 import cn.zealon.notes.common.result.ResultUtil;
@@ -12,10 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
@@ -47,6 +44,7 @@ public class JwtAuthService {
             // 生成Token
             String token = jwtTokenUtil.generateToken(userDetails);
             LoginUserVO vo = new LoginUserVO();
+            vo.setRegistered(true);
             vo.setToken(token);
             vo.setUserId(userDetails.getUser().getUserId());
             vo.setUserName(userDetails.getUser().getUserName());

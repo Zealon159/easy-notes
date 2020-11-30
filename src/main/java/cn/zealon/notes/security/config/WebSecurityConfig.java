@@ -1,8 +1,15 @@
 package cn.zealon.notes.security.config;
 
 import cn.zealon.notes.security.filter.JwtAuthenticationTokenFilter;
+import cn.zealon.notes.security.handler.OAuth2AuthenticationFailureHandler;
+import cn.zealon.notes.security.handler.OAuth2AuthenticationSuccessHandler;
 import cn.zealon.notes.security.service.DefaultUserDetailsService;
 import cn.zealon.notes.security.handler.DefaultLogoutSuccessHandler;
+import com.nimbusds.oauth2.sdk.ParseException;
+import com.nimbusds.oauth2.sdk.util.JSONArrayUtils;
+import com.nimbusds.oauth2.sdk.util.JSONObjectUtils;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
@@ -18,14 +25,22 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.client.filter.OAuth2ClientContextFilter;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -46,9 +61,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private OAuth2ClientContext oauth2ClientContext;
 
-    //@Autowired
-    //GithubPrincipalExtractor githubPrincipalExtractor;
-
     @Autowired
     private DefaultUserDetailsService defaultUserDetailsService;
 
@@ -61,6 +73,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
 
+    @Autowired
+    private OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+
+    @Autowired
+    private OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // 基础配置
@@ -68,7 +86,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf()
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                 .ignoringAntMatchers("/auth/**")
-                .and().cors().and()
+
+                .and()
+                .cors()
+
+                .and()
                 .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
 
                 // 未授权端点自定义处理
@@ -78,14 +100,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 // 对于获取token的rest api要允许匿名访问
-                .antMatchers("/auth/**", "/oauth/**", "/error", "/favicon.ico").permitAll()
+                .antMatchers("/", "/login", "/auth/**", "/oauth/**", "/login/oauth2/code/**"
+                        ,"/error", "/favicon.ico").permitAll()
                 // 除上面外的所有请求全部需要鉴权认证
                 .anyRequest().authenticated()
 
                 .and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
-        //http.addFilterBefore(ssoFilter(), UsernamePasswordAuthenticationFilter.class);
+                .and()
+                .oauth2Login()
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler(oAuth2AuthenticationFailureHandler)
+        ;
+
     }
 
     @Override
@@ -111,16 +139,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
-    /*@Bean
-    public CustomAuthenticationFilter customAuthenticationFilter() throws Exception {
-        CustomAuthenticationFilter filter = new CustomAuthenticationFilter();
-        filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
-        filter.setAuthenticationFailureHandler(authenticationFailureHandler);
-        filter.setFilterProcessesUrl("/auth/login");
-        filter.setAuthenticationManager(authenticationManagerBean());
-        return filter;
-    }*/
-
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -143,22 +161,35 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return registration;
     }
 
-    //自定义过滤器，用于拦截oauth2第三方登录返回code的url,并根据code,clientid,clientSecret去授权服务器拿accace_token
-    private Filter ssoFilter() {
-        //OAuth2ClientAuthenticationProcessingFilter
-        //它的构造器需要传入defaultFilterProcessesUrl，用于指定这个filter拦截哪个url。
-        //它依赖OAuth2RestTemplate来获取token
-        //还依赖ResourceServerTokenServices进行校验token
-        String defaultFilterProcessesUrl = "/oauth/github/callback";
-        OAuth2ClientAuthenticationProcessingFilter githubFilter = new OAuth2ClientAuthenticationProcessingFilter(defaultFilterProcessesUrl);
-        //对rest template的封装，为获取token等提供便捷方法
-        //DefaultUserInfoRestTemplateFactory实例了OAuth2RestTemplate,这个提供了OAuth2RestTemplate
-        OAuth2RestTemplate githubTemplate = new OAuth2RestTemplate(github(), oauth2ClientContext);
-        githubFilter.setRestTemplate(githubTemplate);
-        UserInfoTokenServices tokenServices = new UserInfoTokenServices(githubResource().getUserInfoUri(), github().getClientId());
-        tokenServices.setRestTemplate(githubTemplate);
-        githubFilter.setTokenServices(tokenServices);
-        return githubFilter;
+    @Bean
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService(RestTemplate restTemplate) {
+        DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
+        return request -> {
+            OAuth2User user = delegate.loadUser(request);
+            if (!"github".equals(request.getClientRegistration().getRegistrationId())) {
+                return user;
+            }
+
+            OAuth2AuthorizedClient client = new OAuth2AuthorizedClient
+                    (request.getClientRegistration(), user.getName(), request.getAccessToken());
+            String url = (String) user.getAttributes().get("organizations_url");
+
+            String result = restTemplate.getForObject(url, String.class);
+            try {
+                JSONArray jsonArray = JSONArrayUtils.parse(result);
+
+                for (int i = 0; i < jsonArray.size(); i++) {
+                    JSONObject obj = JSONObjectUtils.parse(jsonArray.get(i).toString());
+                    if (obj.getAsString("login").equals("spring-projects")) {
+                        return user;
+                    }
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            throw new OAuth2AuthenticationException(new OAuth2Error("invalid_token", "Not in Spring Team", ""));
+        };
     }
 
     @Bean
