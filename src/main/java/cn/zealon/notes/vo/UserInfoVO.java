@@ -1,6 +1,9 @@
 package cn.zealon.notes.vo;
 
+import cn.zealon.notes.domain.UserOAuth2Client;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author: zealon
@@ -10,4 +13,5 @@ import lombok.Data;
 public class UserInfoVO {
     private String userId;
     private String userName;
+    private List<UserOAuth2Client> clients;
 }

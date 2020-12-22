@@ -10,6 +10,7 @@ import lombok.Data;
 public class LoginUserVO extends UserInfoVO {
     private String token;
     private Boolean registered;
+    private String clientName;
     private String initUserId;
     private String initUserName;
     private String initAvatarUrl;

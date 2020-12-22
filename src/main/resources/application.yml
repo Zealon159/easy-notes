@@ -1,18 +1,11 @@
 server:
   port: 8080
 
-
 spring:
-  security:
-    oauth2:
-      client:
-        registration:
-          github:
-            clientId: d2456e0d3f62d5838fb2
-            clientSecret: 60ec6d3c4dcf47281fe06124da535faf33cb17ec
-          qq:
-            clientId: qqe
-            clientSecret: 32
+  data:
+    mongodb:
+      uri: mongodb://localhost/easy-notes
+      port: 27017
 
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
@@ -31,13 +24,19 @@ jwt:
   expiration: 3600000
   header: JWTHeaderName
 
-oauth-client:
-  github:
-    client-id: d2456e0d3f62d5838fb2
-    client-secret: 60ec6d3c4dcf47281fe06124da535faf33cb17ec
-    access-token-uri: https://github.com/login/oauth/access_token
-    user-authorization-uri: https://github.com/login/oauth/authorize
-    resource:
+oauth2:
+  clients:
+    github:
+      client-id: d2456e0d3f62d5838fb2
+      client-name: Github
+      client-secret: 60ec6d3c4dcf47281fe06124da535faf33cb17ec
+      access-token-uri: https://github.com/login/oauth/access_token
+      user-authorization-uri: https://github.com/login/oauth/authorize
       user-info-uri: https://api.github.com/user
-
-debug: true
+    qq:
+      client-id: d2456e0d3f62d5838fb2
+      client-name: QQ
+      client-secret: 60ec6d3c4dcf47281fe06124da535faf33cb17ec
+      access-token-uri: https://github.com/login/oauth/access_token
+      user-authorization-uri: https://github.com/login/oauth/authorize
+      user-info-uri: https://api.github.com/user

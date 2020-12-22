@@ -1,6 +1,7 @@
 package cn.zealon.notes.domain;
 
 import lombok.Data;
+import java.util.List;
 
 /**
  * @author: tangyl
@@ -13,4 +14,5 @@ public class UserInfo {
     private String password;
     private Integer enable;
     private Integer pwdLock;
+    private List<UserOAuth2Client> clients;
 }
