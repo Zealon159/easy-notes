@@ -2,6 +2,7 @@ package cn.zealon.notes.service;
 
 import cn.zealon.notes.common.result.Result;
 import cn.zealon.notes.common.result.ResultUtil;
+import cn.zealon.notes.common.utils.DateUtil;
 import cn.zealon.notes.controller.dto.RegisterDTO;
 import cn.zealon.notes.domain.User;
 import cn.zealon.notes.domain.UserOAuth2Client;
@@ -54,7 +55,9 @@ public class UserService {
             user.setPwdLock(0);
             user.setUserId(registerDTO.getUserId());
             user.setUserName(registerDTO.getUserName());
-            user.setUpdateTime(new Date());
+            String nowDateString = DateUtil.getNowDateString();
+            user.setUpdateTime(nowDateString);
+            user.setCreateTime(nowDateString);
 
             // 处理OAuth2客户端信息
             UserOAuth2Client registerOAuth2Client = this.getRegisterOAuth2Client(registerDTO);

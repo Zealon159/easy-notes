@@ -18,5 +18,7 @@ public class CategoryVO {
 
     private String parentId;
 
+    private Integer level;
+
     private List<CategoryVO> categorys;
 }

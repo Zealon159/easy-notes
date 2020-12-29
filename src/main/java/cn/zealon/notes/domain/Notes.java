@@ -4,8 +4,7 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-
-import java.util.Date;
+import java.util.List;
 
 /**
  * 笔记
@@ -17,18 +16,39 @@ import java.util.Date;
 public class Notes {
 
     @Id
-    private Integer id;
+    private String id;
 
     @Field("type")
-    private Integer type;
+    private String type;
 
-    @Field("subject")
-    private String subject;
+    @Field("user_id")
+    private String userId;
+
+    @Field("title")
+    private String title;
 
     @Field("content")
     private String content;
 
+    @Field("star")
+    private Integer star;
+
+    @Field("delete")
+    private Integer delete;
+
+    @Field("tags")
+    private List<String> tags;
+
+    @Field("category_id")
+    private String categoryId;
+
+    @Field("category_sub_id")
+    private String categorySubId;
+
+    @Field("create_time")
+    private String createTime;
+
     @Field("update_time")
-    private Date updateTime;
+    private String updateTime;
 
 }

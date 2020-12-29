@@ -28,4 +28,13 @@ public class Category {
 
     @Field("sort")
     private Integer sort;
+
+    @Field("level")
+    private Integer level;
+
+    @Field("create_time")
+    private String createTime;
+
+    @Field("update_time")
+    private String updateTime;
 }

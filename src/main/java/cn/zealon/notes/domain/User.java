@@ -4,7 +4,6 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -37,6 +36,9 @@ public class User {
     @Field("auth2_clients")
     private List<UserOAuth2Client> auth2Clients;
 
+    @Field("create_time")
+    private String createTime;
+
     @Field("update_time")
-    private Date updateTime;
+    private String updateTime;
 }
