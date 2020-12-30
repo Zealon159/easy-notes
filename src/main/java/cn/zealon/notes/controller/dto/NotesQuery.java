@@ -9,7 +9,6 @@ import lombok.Data;
  */
 @Data
 public class NotesQuery {
-    private String userId;
     private Integer star;
     private Integer delete;
     private String categoryId;

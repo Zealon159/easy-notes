@@ -8,8 +8,6 @@ import cn.zealon.notes.service.NotesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 /**
  * 笔记接口
  * @author: zealon
@@ -34,12 +32,17 @@ public class NotesController extends BaseController {
 
     @PostMapping("update-tags")
     public Result upsertNotesTags(@RequestBody Notes notes){
-        return this.notesService.upsertNotesTags(notes.getTags(), notes.getId());
+        return this.notesService.upsertNotesTags(notes);
     }
 
     @PostMapping("delete")
     public Result deleteNotes(@RequestBody Notes notes) {
         return this.notesService.delete(notes.getId());
+    }
+
+    @PostMapping("delete-all")
+    public Result deleteAll() {
+        return this.notesService.deleteAll();
     }
 
     @GetMapping("details")

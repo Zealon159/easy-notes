@@ -3,21 +3,20 @@ package cn.zealon.notes.service;
 import cn.zealon.notes.common.result.Result;
 import cn.zealon.notes.common.result.ResultUtil;
 import cn.zealon.notes.common.utils.DateUtil;
-import cn.zealon.notes.controller.dto.RegisterDTO;
+import cn.zealon.notes.controller.dto.RegisterBO;
 import cn.zealon.notes.domain.User;
 import cn.zealon.notes.domain.UserOAuth2Client;
 import cn.zealon.notes.repository.UserRepository;
 import cn.zealon.notes.security.config.DefaultPasswordEncoder;
 import cn.zealon.notes.domain.UserInfo;
 import cn.zealon.notes.security.config.OAuth2ClientProperties;
-import org.apache.commons.lang3.StringUtils;
+import cn.zealon.notes.security.jwt.JwtAuthService;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,14 +35,17 @@ public class UserService {
     @Autowired
     private OAuth2ClientService auth2ClientService;
 
+    @Autowired
+    private JwtAuthService jwtAuthService;
+
     /**
      * 注册用户
-     * @param registerDTO
+     * @param registerBO
      * @return
      */
-    public Result register(RegisterDTO registerDTO){
+    public Result register(RegisterBO registerBO){
         try {
-            User dbUser = this.userRepository.getUserByUserId(registerDTO.getUserId());
+            User dbUser = this.userRepository.getUserByUserId(registerBO.getUserId());
             if (dbUser != null) {
                 return ResultUtil.verificationFailed().buildMessage("该用户已存在!");
             }
@@ -51,16 +53,16 @@ public class UserService {
             User user = new User();
             user.setEnable(1);
             user.setAvatarUrl("");
-            user.setPassword(defaultPasswordEncoder.encode(registerDTO.getPassword()));
+            user.setPassword(defaultPasswordEncoder.encode(registerBO.getPassword()));
             user.setPwdLock(0);
-            user.setUserId(registerDTO.getUserId());
-            user.setUserName(registerDTO.getUserName());
+            user.setUserId(registerBO.getUserId());
+            user.setUserName(registerBO.getUserName());
             String nowDateString = DateUtil.getNowDateString();
             user.setUpdateTime(nowDateString);
             user.setCreateTime(nowDateString);
 
             // 处理OAuth2客户端信息
-            UserOAuth2Client registerOAuth2Client = this.getRegisterOAuth2Client(registerDTO);
+            UserOAuth2Client registerOAuth2Client = this.getRegisterOAuth2Client(registerBO);
             if (registerOAuth2Client != null) {
                 List<UserOAuth2Client> clients = new ArrayList<>();
                 clients.add(registerOAuth2Client);
@@ -68,10 +70,11 @@ public class UserService {
             }
 
             this.userRepository.insertOne(user);
+            // 直接登录
+            return this.jwtAuthService.login(registerBO.getUserId(), registerBO.getPassword());
         } catch (Exception ex) {
             return ResultUtil.fail();
         }
-        return ResultUtil.success();
     }
 
     /**
@@ -92,17 +95,17 @@ public class UserService {
 
     /**
      * 获取OAuth2注册客户端
-     * @param registerDTO
+     * @param registerBO
      * @return
      */
-    private UserOAuth2Client getRegisterOAuth2Client(RegisterDTO registerDTO){
+    private UserOAuth2Client getRegisterOAuth2Client(RegisterBO registerBO){
         UserOAuth2Client client = null;
-        OAuth2ClientProperties.OAuth2Client auth2Client = auth2ClientService.getOneClient(registerDTO.getClientName());
+        OAuth2ClientProperties.OAuth2Client auth2Client = auth2ClientService.getOneClient(registerBO.getClientName());
         if (auth2Client != null) {
             client = new UserOAuth2Client();
             client.setBindTime(DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
-            client.setClientName(registerDTO.getClientName());
-            client.setName(registerDTO.getName());
+            client.setClientName(registerBO.getClientName());
+            client.setName(registerBO.getName());
         }
         return client;
     }

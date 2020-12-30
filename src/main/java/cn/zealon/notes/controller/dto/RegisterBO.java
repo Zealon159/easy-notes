@@ -8,7 +8,7 @@ import lombok.Data;
  * @since: 2020/12/21
  */
 @Data
-public class RegisterDTO {
+public class RegisterBO {
     private String userId;
     private String userName;
     private String password;

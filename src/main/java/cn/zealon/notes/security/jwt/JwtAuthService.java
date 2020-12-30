@@ -82,4 +82,9 @@ public class JwtAuthService {
         }
         return null;
     }
+
+    public LoginUserBean getLoginUserBean(){
+        LoginUserBean loginUserBean = (LoginUserBean)  SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return loginUserBean;
+    }
 }

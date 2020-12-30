@@ -4,16 +4,17 @@ import cn.zealon.notes.common.result.Result;
 import cn.zealon.notes.common.result.ResultUtil;
 import cn.zealon.notes.common.utils.DateUtil;
 import cn.zealon.notes.controller.dto.NotesQuery;
+import cn.zealon.notes.domain.Category;
 import cn.zealon.notes.domain.Notes;
+import cn.zealon.notes.repository.CategoryRepository;
+import cn.zealon.notes.repository.NotesRepository;
+import cn.zealon.notes.security.jwt.JwtAuthService;
 import cn.zealon.notes.vo.NotesItemVO;
-import com.mongodb.client.result.UpdateResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.bson.types.ObjectId;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -31,8 +32,19 @@ import java.util.List;
 public class NotesService {
 
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private NotesRepository notesRepository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private JwtAuthService jwtAuthService;
+
+    /**
+     * 创建笔记
+     * @param notes
+     * @return
+     */
     public Result createNotes(Notes notes) {
         try {
             String nowDateString = DateUtil.getNowDateString();
@@ -40,23 +52,30 @@ public class NotesService {
             notes.setUpdateTime(nowDateString);
             notes.setStar(0);
             notes.setDelete(0);
-            notes.setCategoryId(notes.getCategoryId());
-            notes.setUserId("zealon");
-            this.mongoTemplate.insert(notes);
-            return ResultUtil.success();
+            notes.setUserId(jwtAuthService.getLoginUserBean().getUsername());
+            Category category = this.categoryRepository.findOne(notes.getCategorySubId());
+            if (category != null) {
+                notes.setCategoryId(category.getParentId());
+            }
+            Notes insert = this.notesRepository.insert(notes);
+            return ResultUtil.success(insert);
         } catch (Exception ex) {
             log.error("新笔记保存异常!", ex);
             return ResultUtil.fail();
         }
     }
 
-    public Result upsertNotesTags(List<String> tags, String id){
+    /**
+     * 更新标签
+     * @param notes
+     * @return
+     */
+    public Result upsertNotesTags(Notes notes){
         try{
             String nowDateString = DateUtil.getNowDateString();
             Update update = Update.update("update_time", nowDateString);
-            update.set("tags", tags);
-            Query query = Query.query(Criteria.where("_id").is(id));
-            this.mongoTemplate.updateFirst(query, update, Notes.class);
+            update.set("tags", notes.getTags());
+            this.notesRepository.update(notes.getId(), update);
             return ResultUtil.success();
         } catch (Exception ex) {
             log.error("更新笔记异常!", ex);
@@ -64,6 +83,11 @@ public class NotesService {
         }
     }
 
+    /**
+     * 更新笔记
+     * @param notes
+     * @return
+     */
     public Result updateNotes(Notes notes) {
         try {
             // 更新
@@ -84,8 +108,7 @@ public class NotesService {
                 msg = notes.getDelete() == 1 ? "已移动到废纸篓" : "笔记已恢复";
                 update.set("delete", notes.getDelete());
             }
-            Query query = Query.query(Criteria.where("_id").is(notes.getId()));
-            this.mongoTemplate.updateFirst(query, update, Notes.class);
+            this.notesRepository.update(notes.getId(), update);
             return ResultUtil.success().buildMessage(msg);
         } catch (Exception ex) {
             log.error("更新笔记异常!", ex);
@@ -93,11 +116,29 @@ public class NotesService {
         }
     }
 
+    /**
+     * ID删除
+     * @param id
+     * @return
+     */
     public Result delete(String id){
         try {
-            Query query = Query.query(Criteria.where("_id").is(id));
-            this.mongoTemplate.remove(query, "notes");
+            this.notesRepository.remove(id);
             return ResultUtil.success().buildMessage("删除成功");
+        } catch (Exception ex) {
+            log.error("删除记保存异常!", ex);
+            return ResultUtil.fail();
+        }
+    }
+
+    /**
+     * 删除全部
+     * @return
+     */
+    public Result deleteAll(){
+        try {
+            this.notesRepository.removeAll(jwtAuthService.getLoginUserBean().getUsername());
+            return ResultUtil.success().buildMessage("废纸篓已清空");
         } catch (Exception ex) {
             log.error("删除记保存异常!", ex);
             return ResultUtil.fail();
@@ -110,12 +151,18 @@ public class NotesService {
      * @return
      */
     public Result getNotesById(String id) {
-        return ResultUtil.success(this.getNotes(id));
+        return ResultUtil.success(this.notesRepository.findOne(id));
     }
 
+    /**
+     * 查询笔记列表
+     * @param notesQuery
+     * @return
+     */
     public Result getNotesList(NotesQuery notesQuery){
         List<NotesItemVO> vos = new ArrayList<>();
-        Query query = Query.query(Criteria.where("user_id").is(notesQuery.getUserId()));
+        String userId = jwtAuthService.getLoginUserBean().getUsername();
+        Query query = Query.query(Criteria.where("user_id").is(userId));
         // 收藏
         if (notesQuery.getStar() >= 0) {
             query.addCriteria(Criteria.where("star").is(notesQuery.getStar()));
@@ -146,17 +193,12 @@ public class NotesService {
         query.with(sort);
 
         // 执行查询
-        List<Notes> notesList = this.mongoTemplate.find(query, Notes.class);
+        List<Notes> notesList = this.notesRepository.findList(query);
         for(Notes notes : notesList) {
             NotesItemVO vo = new NotesItemVO();
             BeanUtils.copyProperties(notes, vo);
             vos.add(vo);
         }
         return ResultUtil.success(vos);
-    }
-
-    private Notes getNotes(String id) {
-        Query query = Query.query(Criteria.where("_id").is(id));
-        return this.mongoTemplate.findOne(query, Notes.class);
     }
 }

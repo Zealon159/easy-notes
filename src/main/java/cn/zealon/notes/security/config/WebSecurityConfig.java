@@ -52,10 +52,6 @@ import java.util.Arrays;
 @EnableOAuth2Client
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    /** 注入Oauth2.0客户端上下文 */
-    @Autowired
-    private OAuth2ClientContext oauth2ClientContext;
-
     @Autowired
     private DefaultUserDetailsService defaultUserDetailsService;
 
@@ -86,7 +82,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 // 对于获取token的rest api要允许匿名访问
-                .antMatchers("/**", "/register", "/auth/**", "/login/oauth2/callback/**").permitAll()
+                .antMatchers("/register", "/auth/**", "/login/oauth2/callback/**" ).permitAll()
                 // 除上面外的所有请求全部需要鉴权认证
                 .anyRequest().authenticated()
 

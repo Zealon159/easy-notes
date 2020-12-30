@@ -4,6 +4,8 @@ import cn.zealon.notes.common.result.Result;
 import cn.zealon.notes.common.result.ResultUtil;
 import cn.zealon.notes.common.utils.DateUtil;
 import cn.zealon.notes.domain.Category;
+import cn.zealon.notes.repository.CategoryRepository;
+import cn.zealon.notes.security.jwt.JwtAuthService;
 import cn.zealon.notes.vo.CategoryCascadeVO;
 import cn.zealon.notes.vo.CategoryVO;
 import lombok.extern.slf4j.Slf4j;
@@ -12,9 +14,9 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +31,12 @@ import java.util.List;
 public class CategoryService {
 
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private JwtAuthService jwtAuthService;
 
-    public Result save(Category category) {
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    public Result create(Category category) {
         try {
             int level = 1;
             if (StringUtils.isNotBlank(category.getParentId())) {
@@ -39,18 +44,56 @@ public class CategoryService {
             }
             category.setLevel(level);
             String nowDateString = DateUtil.getNowDateString();
+            category.setCreateTime(nowDateString);
             category.setUpdateTime(nowDateString);
-            this.mongoTemplate.save(category);
-            return ResultUtil.success();
+            category.setUserId(jwtAuthService.getLoginUserBean().getUsername());
+            Category insert = this.categoryRepository.insert(category);
+            return ResultUtil.success(insert);
         } catch (Exception ex) {
             log.error("保存分类异常!", ex);
             return ResultUtil.fail();
         }
     }
 
+    public Result update(Category category) {
+        try {
+            // 业务校验
+            if (StringUtils.isNotBlank(category.getParentId())) {
+                Category parentCategory = this.categoryRepository.findOne(category.getParentId());
+                if (parentCategory != null && parentCategory.getLevel() == 2) {
+                    return ResultUtil.verificationFailed().buildMessage("分类深度最多是两层哦！");
+                }
+
+                if (this.categoryRepository.getSubCategoryCountById(category.getId()) > 0) {
+                    return ResultUtil.verificationFailed().buildMessage("当前子分类有数据哦，请先移动子分类到其它分类下再调整父分类！");
+                }
+            }
+
+            String nowDateString = DateUtil.getNowDateString();
+            Update update = Update.update("update_time", nowDateString);
+            if (StringUtils.isNotBlank(category.getTitle())) {
+                update.set("title", category.getTitle());
+            }
+            if (category.getSort() != null) {
+                update.set("sort", category.getSort());
+            }
+            int level = 1;
+            if (StringUtils.isNotBlank(category.getParentId())) {
+                level = 2;
+            }
+            update.set("level", level);
+            update.set("parent_id", category.getParentId());
+            this.categoryRepository.updateOne(category.getId(), update);
+            return ResultUtil.success();
+        } catch (Exception ex) {
+            log.error("更新分类异常!", ex);
+            return ResultUtil.fail();
+        }
+    }
+
     public Result remove(Category category){
         try {
-            this.mongoTemplate.remove(category);
+            this.categoryRepository.remove(category.getId());
             return ResultUtil.success();
         } catch (Exception ex) {
             log.error("删除分类异常!", ex);
@@ -60,11 +103,11 @@ public class CategoryService {
 
     /**
      * 获取用户全部分类(深度2)
-     * @param userId
      * @return
      */
-    public Result getAllCategoryList(String userId) {
+    public Result getAllCategoryList() {
         String parentId = "";
+        String userId = jwtAuthService.getLoginUserBean().getUsername();
         List<Category> categories = this.getCategoryListByParentId(userId, parentId);
         List<CategoryVO> categoryVOS = new ArrayList<>();
         for (Category category : categories) {
@@ -91,11 +134,9 @@ public class CategoryService {
      */
     public Result getCascadeCategoryNames(String id) {
         CategoryCascadeVO vo = new CategoryCascadeVO();
-        Query query = Query.query(Criteria.where("_id").is(id));
-        Category category = this.mongoTemplate.findOne(query, Category.class);
+        Category category = this.categoryRepository.findOne(id);
         if (category != null) {
-            Query query2 = Query.query(Criteria.where("_id").is(category.getParentId()));
-            Category category2 = this.mongoTemplate.findOne(query2, Category.class);
+            Category category2 = this.categoryRepository.findOne(category.getParentId());
             if (category2 != null) {
                 vo.setParentName(category2.getTitle());
             }
@@ -113,6 +154,6 @@ public class CategoryService {
             query.addCriteria(Criteria.where("parent_id").is(new ObjectId(parentId)));
         }
         query.with(Sort.by("sort").ascending());
-        return this.mongoTemplate.find(query, Category.class);
+        return this.categoryRepository.find(query);
     }
 }

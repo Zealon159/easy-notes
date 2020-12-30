@@ -28,8 +28,8 @@ public class CategoryController extends BaseController {
     }
 
     @GetMapping("list")
-    public Result getCategoryListByParentId(String userId) {
-        return this.categoryService.getAllCategoryList(userId);
+    public Result getCategoryListByParentId() {
+        return this.categoryService.getAllCategoryList();
     }
 
     @GetMapping("details")

@@ -60,7 +60,7 @@ public class LoginUserBean implements UserDetails, CredentialsContainer {
 
     @Override
     public String getUsername() {
-        return user.getUserName();
+        return user.getUserId();
     }
 
     /**
