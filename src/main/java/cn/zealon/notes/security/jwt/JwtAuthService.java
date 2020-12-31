@@ -47,6 +47,7 @@ public class JwtAuthService {
             vo.setToken(token);
             vo.setUserId(userDetails.getUser().getUserId());
             vo.setUserName(userDetails.getUser().getUserName());
+            vo.setAvatarUrl(userDetails.getUser().getAvatarUrl());
             return ResultUtil.success(vo);
         } catch (Exception e){
             Result result;

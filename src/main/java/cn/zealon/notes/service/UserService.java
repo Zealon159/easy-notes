@@ -38,6 +38,9 @@ public class UserService {
     @Autowired
     private JwtAuthService jwtAuthService;
 
+    @Autowired
+    private InitNotesDataService initNotesDataService;
+
     /**
      * 注册用户
      * @param registerBO
@@ -45,14 +48,14 @@ public class UserService {
      */
     public Result register(RegisterBO registerBO){
         try {
-            User dbUser = this.userRepository.getUserByUserId(registerBO.getUserId());
+            User dbUser = this.userRepository.findUserByUserId(registerBO.getUserId());
             if (dbUser != null) {
                 return ResultUtil.verificationFailed().buildMessage("该用户已存在!");
             }
 
             User user = new User();
             user.setEnable(1);
-            user.setAvatarUrl("");
+            user.setAvatarUrl(registerBO.getAvatarUrl());
             user.setPassword(defaultPasswordEncoder.encode(registerBO.getPassword()));
             user.setPwdLock(0);
             user.setUserId(registerBO.getUserId());
@@ -70,6 +73,8 @@ public class UserService {
             }
 
             this.userRepository.insertOne(user);
+            // 初始化用户数据
+            this.initNotesDataService.initData(user.getUserId());
             // 直接登录
             return this.jwtAuthService.login(registerBO.getUserId(), registerBO.getPassword());
         } catch (Exception ex) {
@@ -84,7 +89,7 @@ public class UserService {
      */
     public UserInfo getUserByUserId(String userId){
         UserInfo userInfo = null;
-        User user = this.userRepository.getUserByUserId(userId);
+        User user = this.userRepository.findUserByUserId(userId);
         if (user != null) {
             userInfo = new UserInfo();
             BeanUtils.copyProperties(user, userInfo);

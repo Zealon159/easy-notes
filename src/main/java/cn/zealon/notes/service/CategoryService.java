@@ -43,9 +43,6 @@ public class CategoryService {
                 level = 2;
             }
             category.setLevel(level);
-            String nowDateString = DateUtil.getNowDateString();
-            category.setCreateTime(nowDateString);
-            category.setUpdateTime(nowDateString);
             category.setUserId(jwtAuthService.getLoginUserBean().getUsername());
             Category insert = this.categoryRepository.insert(category);
             return ResultUtil.success(insert);
@@ -149,10 +146,9 @@ public class CategoryService {
         Query query = Query.query(Criteria.where("user_id").is(userId));
         if (StringUtils.isBlank(parentId)) {
             parentId = "";
-            query.addCriteria(Criteria.where("parent_id").is(parentId));
-        } else {
-            query.addCriteria(Criteria.where("parent_id").is(new ObjectId(parentId)));
+
         }
+        query.addCriteria(Criteria.where("parent_id").is(parentId));
         query.with(Sort.by("sort").ascending());
         return this.categoryRepository.find(query);
     }

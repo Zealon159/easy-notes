@@ -12,6 +12,7 @@ public class UserInfo {
     private String userId;
     private String userName;
     private String password;
+    private String avatarUrl;
     private Integer enable;
     private Integer pwdLock;
     private List<UserOAuth2Client> clients;

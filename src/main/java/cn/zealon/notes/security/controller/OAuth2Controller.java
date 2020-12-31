@@ -1,10 +1,11 @@
 package cn.zealon.notes.security.controller;
 
 import cn.zealon.notes.common.result.Result;
-import cn.zealon.notes.security.service.OAuth2CallbackService;
+import cn.zealon.notes.security.service.OAuth2Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -13,13 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
  * @since: 2020/11/25
  */
 @RestController
-public class OAuth2CallbackController {
+@RequestMapping("oauth2")
+public class OAuth2Controller {
 
     @Autowired
-    private OAuth2CallbackService auth2CallbackService;
+    private OAuth2Service auth2Service;
 
-    @GetMapping("login/oauth2/callback/{clientId}")
+    @GetMapping("authorized/callback/{clientId}")
     public Result authorizedCallback(@PathVariable("clientId") String clientId, String code, String state){
-        return this.auth2CallbackService.authorized(clientId, code, state);
+        return this.auth2Service.authorized(clientId, code, state);
     }
 }

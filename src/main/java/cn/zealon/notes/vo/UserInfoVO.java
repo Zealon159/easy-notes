@@ -13,5 +13,6 @@ import java.util.List;
 public class UserInfoVO {
     private String userId;
     private String userName;
+    private String avatarUrl;
     private List<UserOAuth2Client> clients;
 }

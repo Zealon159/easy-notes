@@ -34,8 +34,8 @@ public class RestTemplateConfig {
     public RestTemplate restTemplate() {
         // 基于HttpClient
         HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
-        httpComponentsClientHttpRequestFactory.setConnectTimeout(5000);
-        httpComponentsClientHttpRequestFactory.setReadTimeout(3000);
+        httpComponentsClientHttpRequestFactory.setConnectTimeout(10000);
+        httpComponentsClientHttpRequestFactory.setReadTimeout(5000);
         RestTemplate restTemplate = new RestTemplate(httpComponentsClientHttpRequestFactory);
         // 乱码处理
         List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters().stream().map(httpMessageConverter -> {

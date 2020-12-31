@@ -47,11 +47,6 @@ public class NotesService {
      */
     public Result createNotes(Notes notes) {
         try {
-            String nowDateString = DateUtil.getNowDateString();
-            notes.setCreateTime(nowDateString);
-            notes.setUpdateTime(nowDateString);
-            notes.setStar(0);
-            notes.setDelete(0);
             notes.setUserId(jwtAuthService.getLoginUserBean().getUsername());
             Category category = this.categoryRepository.findOne(notes.getCategorySubId());
             if (category != null) {

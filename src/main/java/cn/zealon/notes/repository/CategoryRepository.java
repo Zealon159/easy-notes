@@ -1,5 +1,6 @@
 package cn.zealon.notes.repository;
 
+import cn.zealon.notes.common.utils.DateUtil;
 import cn.zealon.notes.domain.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -37,6 +38,9 @@ public class CategoryRepository {
     }
 
     public Category insert(Category category){
+        String nowDateString = DateUtil.getNowDateString();
+        category.setCreateTime(nowDateString);
+        category.setUpdateTime(nowDateString);
         return this.mongoTemplate.insert(category);
     }
 

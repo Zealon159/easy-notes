@@ -1,5 +1,6 @@
 package cn.zealon.notes.repository;
 
+import cn.zealon.notes.common.utils.DateUtil;
 import cn.zealon.notes.domain.Notes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -22,6 +23,11 @@ public class NotesRepository {
     private MongoTemplate mongoTemplate;
 
     public Notes insert(Notes notes) {
+        String nowDateString = DateUtil.getNowDateString();
+        notes.setCreateTime(nowDateString);
+        notes.setUpdateTime(nowDateString);
+        notes.setStar(0);
+        notes.setDelete(0);
         return this.mongoTemplate.insert(notes);
     }
 
