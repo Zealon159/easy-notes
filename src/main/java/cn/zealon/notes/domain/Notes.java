@@ -42,9 +42,6 @@ public class Notes {
     @Field("category_id")
     private String categoryId;
 
-    @Field("category_sub_id")
-    private String categorySubId;
-
     @Field("create_time")
     private String createTime;
 

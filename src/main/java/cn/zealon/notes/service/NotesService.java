@@ -48,10 +48,6 @@ public class NotesService {
     public Result createNotes(Notes notes) {
         try {
             notes.setUserId(jwtAuthService.getLoginUserBean().getUsername());
-            Category category = this.categoryRepository.findOne(notes.getCategorySubId());
-            if (category != null) {
-                notes.setCategoryId(category.getParentId());
-            }
             Notes insert = this.notesRepository.insert(notes);
             return ResultUtil.success(insert);
         } catch (Exception ex) {
@@ -166,8 +162,7 @@ public class NotesService {
         query.addCriteria(Criteria.where("delete").is(notesQuery.getDelete()));
         // 分类
         if (notesQuery.getLevel() > 0) {
-            String categoryField = notesQuery.getLevel() == 1 ? "category_id" : "category_sub_id";
-            query.addCriteria(Criteria.where(categoryField).is(notesQuery.getCategoryId()));
+            query.addCriteria(Criteria.where("category_id").is(notesQuery.getCategoryId()));
         }
         // 限制返回数
         if (notesQuery.getLimit() != null && notesQuery.getLimit() > 0) {

@@ -52,6 +52,16 @@ public class NotesRepository {
         return this.mongoTemplate.findOne(query, Notes.class);
     }
 
+    /**
+     * 获取笔记数量
+     * @param categoryId
+     * @return
+     */
+    public long findCountByCategoryId(String categoryId) {
+        Query queryCount = Query.query(Criteria.where("category_id").is(categoryId));
+        return this.mongoTemplate.count(queryCount, "notes");
+    }
+
     public List<Notes> findList(Query query){
         return this.mongoTemplate.find(query, Notes.class);
     }

@@ -27,16 +27,6 @@ public class CategoryRepository {
         return this.mongoTemplate.findOne(query, Category.class);
     }
 
-    /**
-     * 获取子分类数量
-     * @param id
-     * @return
-     */
-    public long getSubCategoryCountById(String id) {
-        Query queryCount = Query.query(Criteria.where("_id").is(id));
-        return this.mongoTemplate.count(queryCount, "category");
-    }
-
     public Category insert(Category category){
         String nowDateString = DateUtil.getNowDateString();
         category.setCreateTime(nowDateString);

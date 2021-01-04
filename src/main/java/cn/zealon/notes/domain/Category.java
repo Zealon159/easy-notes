@@ -23,14 +23,8 @@ public class Category {
     @Field("title")
     private String title;
 
-    @Field("parent_id")
-    private String parentId;
-
     @Field("sort")
     private Integer sort;
-
-    @Field("level")
-    private Integer level;
 
     @Field("create_time")
     private String createTime;

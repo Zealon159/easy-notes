@@ -12,7 +12,7 @@ public class NotesQuery {
     private Integer star;
     private Integer delete;
     private String categoryId;
-    /** 0:查全部  1:查一级分类  2:查二级分类*/
+    /** 0:查全部  1:分类查询 */
     private Integer level;
     private Integer limit;
     /** 排序字段 */
