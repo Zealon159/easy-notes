@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -22,7 +23,9 @@ public class UserRepository {
         this.mongoTemplate.save(user);
     }
 
-    public void updateOne(User user){
+    public void updateOne(String userId, Update update){
+        Query query = Query.query(Criteria.where("_id").is(userId));
+        this.mongoTemplate.updateFirst(query, update, User.class);
         this.mongoTemplate.update(User.class);
     }
 

@@ -91,6 +91,10 @@ public class NotesService {
             if (StringUtils.isNotBlank(notes.getContent())) {
                 update.set("content", notes.getContent());
             }
+            if (StringUtils.isNotBlank(notes.getCategoryId())) {
+                update.set("category_id", notes.getCategoryId());
+                msg = "操作成功";
+            }
             if (notes.getStar() != null) {
                 msg = notes.getStar() == 1 ? "收藏成功" : "已取消收藏";
                 update.set("star", notes.getStar());

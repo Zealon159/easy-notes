@@ -30,10 +30,6 @@ public class LoginUserBean implements UserDetails, CredentialsContainer {
      * 登录时间
      */
     private LocalDateTime loginTime;
-    /**
-     * 登陆类型
-     */
-    //private LoginType loginType;
 
     public LoginUserBean() {
     }

@@ -62,6 +62,16 @@ public class NotesRepository {
         return this.mongoTemplate.count(queryCount, "notes");
     }
 
+    /**
+     * 获取用户笔记总数
+     * @param userId
+     * @return
+     */
+    public long findCountByUserId(String userId) {
+        Query queryCount = Query.query(Criteria.where("user_id").is(userId));
+        return this.mongoTemplate.count(queryCount, "notes");
+    }
+
     public List<Notes> findList(Query query){
         return this.mongoTemplate.find(query, Notes.class);
     }

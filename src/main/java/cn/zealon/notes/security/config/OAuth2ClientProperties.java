@@ -42,6 +42,8 @@ public class OAuth2ClientProperties {
         private String clientId;
         /** 客户端名称 */
         private String clientName;
+        /** 客户端名称(CN) */
+        private String clientNameCn;
         /** 秘钥 */
         private String clientSecret;
         /** 获取token的地址 */
@@ -65,6 +67,14 @@ public class OAuth2ClientProperties {
 
         public void setClientName(String clientName) {
             this.clientName = clientName;
+        }
+
+        public String getClientNameCn() {
+            return clientNameCn;
+        }
+
+        public void setClientNameCn(String clientNameCn) {
+            this.clientNameCn = clientNameCn;
         }
 
         public String getClientSecret() {

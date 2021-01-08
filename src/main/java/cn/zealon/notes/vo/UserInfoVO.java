@@ -15,4 +15,5 @@ public class UserInfoVO {
     private String userName;
     private String avatarUrl;
     private List<UserOAuth2Client> clients;
+    private String updateTime;
 }

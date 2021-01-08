@@ -43,11 +43,11 @@ public class JwtAuthService {
             // 生成Token
             String token = jwtTokenUtil.generateToken(userDetails);
             LoginUserVO vo = new LoginUserVO();
-            vo.setRegistered(true);
             vo.setToken(token);
             vo.setUserId(userDetails.getUser().getUserId());
             vo.setUserName(userDetails.getUser().getUserName());
             vo.setAvatarUrl(userDetails.getUser().getAvatarUrl());
+            vo.setUpdateTime(userDetails.getUser().getUpdateTime());
             return ResultUtil.success(vo);
         } catch (Exception e){
             Result result;
@@ -84,8 +84,11 @@ public class JwtAuthService {
         return null;
     }
 
-    public LoginUserBean getLoginUserBean(){
-        LoginUserBean loginUserBean = (LoginUserBean)  SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return loginUserBean;
+    public LoginUserBean getLoginUserBean() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.getPrincipal().toString().equals("anonymousUser")) {
+            return null;
+        }
+        return (LoginUserBean)  authentication.getPrincipal();
     }
 }

@@ -22,6 +22,6 @@ public class DefaultPasswordEncoder implements PasswordEncoder {
 
     @Override
     public boolean matches(CharSequence rawPassword, String encodedPassword) {
-        return encodedPassword.equals(rawPassword.toString());
+        return passwordEncoder.matches(rawPassword, encodedPassword);
     }
 }

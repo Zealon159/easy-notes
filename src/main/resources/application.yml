@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8010
 
 spring:
   data:
@@ -29,6 +29,7 @@ oauth2:
     github:
       client-id: d2456e0d3f62d5838fb2
       client-name: Github
+      client-name-cn: Github
       client-secret: 60ec6d3c4dcf47281fe06124da535faf33cb17ec
       access-token-uri: https://github.com/login/oauth/access_token
       user-authorization-uri: https://github.com/login/oauth/authorize
@@ -36,6 +37,23 @@ oauth2:
     qq:
       client-id: d2456e0d3f62d5838fb2
       client-name: QQ
+      client-name-cn: 腾讯QQ
+      client-secret: 60ec6d3c4dcf47281fe06124da535faf33cb17ec
+      access-token-uri: https://github.com/login/oauth/access_token
+      user-authorization-uri: https://github.com/login/oauth/authorize
+      user-info-uri: https://api.github.com/user
+    wechat:
+      client-id: d2456e0d3f62d5838fb2
+      client-name: wechat
+      client-name-cn: 微信
+      client-secret: 60ec6d3c4dcf47281fe06124da535faf33cb17ec
+      access-token-uri: https://github.com/login/oauth/access_token
+      user-authorization-uri: https://github.com/login/oauth/authorize
+      user-info-uri: https://api.github.com/user
+    weibo:
+      client-id: d2456e0d3f62d5838fb2
+      client-name: weibo
+      client-name-cn: 微博
       client-secret: 60ec6d3c4dcf47281fe06124da535faf33cb17ec
       access-token-uri: https://github.com/login/oauth/access_token
       user-authorization-uri: https://github.com/login/oauth/authorize

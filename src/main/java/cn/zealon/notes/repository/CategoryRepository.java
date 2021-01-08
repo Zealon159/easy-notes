@@ -52,4 +52,14 @@ public class CategoryRepository {
     public List<Category> find(Query query){
         return this.mongoTemplate.find(query, Category.class);
     }
+
+    /**
+     * 获取分类总数
+     * @param userId
+     * @return
+     */
+    public long findCountByUserId(String userId) {
+        Query queryCount = Query.query(Criteria.where("user_id").is(userId));
+        return this.mongoTemplate.count(queryCount, "category");
+    }
 }

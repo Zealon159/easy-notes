@@ -16,4 +16,5 @@ public class UserInfo {
     private Integer enable;
     private Integer pwdLock;
     private List<UserOAuth2Client> clients;
+    private String updateTime;
 }
