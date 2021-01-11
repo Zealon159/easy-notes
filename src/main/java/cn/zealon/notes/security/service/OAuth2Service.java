@@ -4,7 +4,6 @@ import cn.zealon.notes.common.result.Result;
 import cn.zealon.notes.common.result.ResultUtil;
 import cn.zealon.notes.common.utils.DateUtil;
 import cn.zealon.notes.domain.User;
-import cn.zealon.notes.domain.UserInfo;
 import cn.zealon.notes.domain.UserOAuth2Client;
 import cn.zealon.notes.repository.UserRepository;
 import cn.zealon.notes.security.config.OAuth2ClientProperties;
