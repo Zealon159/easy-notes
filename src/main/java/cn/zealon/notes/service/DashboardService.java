@@ -4,12 +4,12 @@ import cn.zealon.notes.common.result.Result;
 import cn.zealon.notes.common.result.ResultUtil;
 import cn.zealon.notes.repository.CategoryRepository;
 import cn.zealon.notes.repository.NotesRepository;
+import cn.zealon.notes.repository.TagRepository;
 import cn.zealon.notes.security.jwt.JwtAuthService;
 import cn.zealon.notes.vo.DashboardVO;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +30,9 @@ public class DashboardService {
     @Autowired
     private NotesRepository notesRepository;
 
+    @Autowired
+    private TagRepository tagRepository;
+
     /**
      * 获取仪表盘数据
      * @return
@@ -40,8 +43,7 @@ public class DashboardService {
         vo.setCategoryCount(categoryRepository.findCountByUserId(userId));
         vo.setNotesCount(notesRepository.findCountByUserId(userId));
         vo.setClassicQuotations(this.getClassicQuotations());
-        // todo
-        vo.setTagCount(0L);
+        vo.setTagCount(tagRepository.findCountByUserId(userId));
         this.getWelcome(vo);
         return ResultUtil.success(vo);
     }

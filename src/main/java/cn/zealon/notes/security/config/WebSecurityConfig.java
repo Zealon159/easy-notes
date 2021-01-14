@@ -21,7 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 
 /**
- * 安全配置
+ * Web安全配置
  * @author: zealon
  * @since: 2020/11/16
  */
@@ -95,13 +95,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     /**
-     * 跨域配置
+     * 跨域请求配置
      * @return
      */
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:9000"));
+        // 允许请求的域名
+        configuration.setAllowedOrigins(
+                Arrays.asList("http://localhost:9000",
+                "http://notes.zealon.cn",
+                "https://notes.zealon.cn"));
+        // 允许请求的方法
         configuration.setAllowedMethods(Arrays.asList("GET", "POST"));
         configuration.applyPermitDefaultValues();
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

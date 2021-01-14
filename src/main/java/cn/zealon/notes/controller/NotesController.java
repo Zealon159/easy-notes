@@ -3,6 +3,7 @@ package cn.zealon.notes.controller;
 import cn.zealon.notes.common.base.BaseController;
 import cn.zealon.notes.common.result.Result;
 import cn.zealon.notes.controller.dto.NotesQuery;
+import cn.zealon.notes.controller.dto.TagsBO;
 import cn.zealon.notes.domain.Notes;
 import cn.zealon.notes.service.NotesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +32,8 @@ public class NotesController extends BaseController {
     }
 
     @PostMapping("update-tags")
-    public Result upsertNotesTags(@RequestBody Notes notes){
-        return this.notesService.upsertNotesTags(notes);
+    public Result upsertNotesTags(@RequestBody TagsBO tagsBO){
+        return this.notesService.upsertNotesTags(tagsBO);
     }
 
     @PostMapping("delete")

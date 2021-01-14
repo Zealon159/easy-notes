@@ -6,12 +6,24 @@ spring:
     mongodb:
       uri: mongodb://localhost/easy-notes
       port: 27017
+  # 线程池配置
+  thread-pool:
+    default:
+      corePoolSize: 2
+      maximumPoolSize: 4
+      keepAliveTime: 3000
+      queueCapacity: 1024
 
+# JWT配置
 jwt:
+  # 秘钥
   secret: ji934fsfS9fA01eoPq23
-  expiration: 3600000
+  # 过期时间(毫秒)
+  expiration: 36000000
+  # 请求头Key
   header: JWTHeaderName
 
+# OAuth2客户端配置
 oauth2:
   clients:
     github:

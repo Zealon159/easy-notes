@@ -4,7 +4,7 @@ import cn.zealon.notes.common.result.Result;
 import cn.zealon.notes.common.result.ResultUtil;
 import cn.zealon.notes.common.utils.DateUtil;
 import cn.zealon.notes.controller.dto.NotesQuery;
-import cn.zealon.notes.domain.Category;
+import cn.zealon.notes.controller.dto.TagsBO;
 import cn.zealon.notes.domain.Notes;
 import cn.zealon.notes.repository.CategoryRepository;
 import cn.zealon.notes.repository.NotesRepository;
@@ -21,6 +21,7 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 笔记服务
@@ -40,6 +41,12 @@ public class NotesService {
     @Autowired
     private JwtAuthService jwtAuthService;
 
+    @Autowired
+    private ExecutorService defaultQueueThreadPool;
+
+    @Autowired
+    private TagService tagService;
+
     /**
      * 创建笔记
      * @param notes
@@ -58,15 +65,19 @@ public class NotesService {
 
     /**
      * 更新标签
-     * @param notes
+     * @param tagsBO
      * @return
      */
-    public Result upsertNotesTags(Notes notes){
+    public Result upsertNotesTags(TagsBO tagsBO){
         try{
+            String userId = jwtAuthService.getLoginUserBean().getUsername();
             String nowDateString = DateUtil.getNowDateString();
             Update update = Update.update("update_time", nowDateString);
-            update.set("tags", notes.getTags());
-            this.notesRepository.update(notes.getId(), update);
+            update.set("tags", tagsBO.getTags());
+            this.notesRepository.update(tagsBO.getNotesId(), update);
+            // 异步处理标签数据
+            TagTask tagTask = new TagTask(tagsBO, tagService, userId);
+            this.defaultQueueThreadPool.execute(tagTask);
             return ResultUtil.success();
         } catch (Exception ex) {
             log.error("更新笔记异常!", ex);
@@ -121,7 +132,7 @@ public class NotesService {
             this.notesRepository.remove(id);
             return ResultUtil.success().buildMessage("删除成功");
         } catch (Exception ex) {
-            log.error("删除记保存异常!", ex);
+            log.error("删除笔记异常!", ex);
             return ResultUtil.fail();
         }
     }
@@ -135,7 +146,7 @@ public class NotesService {
             this.notesRepository.removeAll(jwtAuthService.getLoginUserBean().getUsername());
             return ResultUtil.success().buildMessage("废纸篓已清空");
         } catch (Exception ex) {
-            log.error("删除记保存异常!", ex);
+            log.error("删除全部笔记异常!", ex);
             return ResultUtil.fail();
         }
     }
