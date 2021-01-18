@@ -1,7 +1,8 @@
-package cn.zealon.notes.service;
+package cn.zealon.notes.service.task;
 
 import cn.zealon.notes.controller.dto.TagsBO;
 import cn.zealon.notes.domain.Tag;
+import cn.zealon.notes.service.TagService;
 
 /**
  * 标签处理任务

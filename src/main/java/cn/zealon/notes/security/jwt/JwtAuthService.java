@@ -15,6 +15,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 
+/**
+ * JWT登录认证
+ * @author: zealon
+ * @since: 2020/11/27
+ */
 @Slf4j
 @Service
 public class JwtAuthService {
@@ -30,7 +35,10 @@ public class JwtAuthService {
 
     /**
      * 登录认证换取JWT令牌
-     * @return JWT
+     * @param username
+     * @param password
+     * @return
+     * @throws CustomException
      */
     public Result login(String username, String password) throws CustomException {
         try {
@@ -76,7 +84,11 @@ public class JwtAuthService {
         }
     }
 
-
+    /**
+     * 刷新Token过期时间
+     * @param oldToken
+     * @return
+     */
     public String refreshToken(String oldToken){
         if(!jwtTokenUtil.isTokenExpired(oldToken)){
             return jwtTokenUtil.refreshToken(oldToken);
@@ -84,6 +96,10 @@ public class JwtAuthService {
         return null;
     }
 
+    /**
+     * 获取当前认证对象
+     * @return 返回null标识认证过期
+     */
     public LoginUserBean getLoginUserBean() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication.getPrincipal().toString().equals("anonymousUser")) {

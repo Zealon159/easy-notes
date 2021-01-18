@@ -9,6 +9,7 @@ import cn.zealon.notes.domain.Notes;
 import cn.zealon.notes.repository.CategoryRepository;
 import cn.zealon.notes.repository.NotesRepository;
 import cn.zealon.notes.security.jwt.JwtAuthService;
+import cn.zealon.notes.service.task.TagTask;
 import cn.zealon.notes.vo.NotesItemVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

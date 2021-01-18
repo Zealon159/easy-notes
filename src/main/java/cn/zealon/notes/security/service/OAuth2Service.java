@@ -8,25 +8,20 @@ import cn.zealon.notes.domain.UserOAuth2Client;
 import cn.zealon.notes.repository.UserRepository;
 import cn.zealon.notes.security.config.OAuth2ClientProperties;
 import cn.zealon.notes.security.domain.LoginUserBean;
-import cn.zealon.notes.security.domain.OAuth2CodeResult;
+import cn.zealon.notes.security.domain.OAuth2AccessToken;
+import cn.zealon.notes.security.domain.OAuth2AccountInfo;
 import cn.zealon.notes.security.jwt.JwtAuthService;
 import cn.zealon.notes.security.jwt.JwtTokenUtil;
 import cn.zealon.notes.service.OAuth2ClientService;
 import cn.zealon.notes.service.UserService;
 import cn.zealon.notes.vo.OAuth2LoginUserVO;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.http.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,9 +41,6 @@ public class OAuth2Service {
     private DefaultUserDetailsService defaultUserDetailsService;
 
     @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -60,61 +52,64 @@ public class OAuth2Service {
     @Autowired
     private JwtAuthService jwtAuthService;
 
+    /** OAuth2 策略接口工厂类，Bean交给Spring管理 */
+    @Autowired
+    private Map<String, AccountInfoStrategy> accountInfoStrategyMap;
+
     /**
-     * 认证
+     * 认证处理
      * @param clientName
      * @param code
      * @param state
      * @return
      */
     public Result authorized(String clientName, String code, String state){
-        Map<String, Object> body = new HashMap<>();
         OAuth2ClientProperties.OAuth2Client client = auth2ClientService.getOneClient(clientName);
         if (client == null) {
             return ResultUtil.notFound().buildMessage("获取不到配置文件！clientName:" + clientName);
         }
-        body.put("client_id", client.getClientId());
-        body.put("client_secret", client.getClientSecret());
-        body.put("code", code);
-        body.put("redirect_uri", "");
-        body.put("state", state);
-        try {
-            // 获取授权码
-            HttpEntity<String> formEntity = new HttpEntity<>(JSON.toJSONString(body), this.getDefaultHttpRequestHeaders(null));
-            OAuth2CodeResult codeResult = restTemplate.postForObject(client.getAccessTokenUri(), formEntity, OAuth2CodeResult.class);
 
-            // 获取用户信息
-            OAuth2LoginUserVO loginUser = getLoginUser(clientName, codeResult.getAccess_token(), client.getUserInfoUri());
-            return ResultUtil.success(loginUser);
+        try {
+            AccountInfoStrategy accountInfoStrategy = accountInfoStrategyMap.get(clientName);
+            // 获取访问令牌
+            OAuth2AccessToken accessToken = accountInfoStrategy.getAccessToken(client, code, state);
+            if (accessToken == null) {
+                return ResultUtil.fail();
+            }
+
+            // 获取OAuth2账户信息
+            OAuth2AccountInfo accountInfo = accountInfoStrategy.getAccountInfo(clientName, accessToken.getAccessToken(), client.getUserInfoUri());
+            if (accountInfo == null) {
+                return ResultUtil.fail();
+            }
+            return ResultUtil.success(this.getLoginUser(clientName, accountInfo));
         } catch (Exception ex){
-            log.error("请求{}获取授权码失败！data:{}", clientName, JSON.toJSONString(body), ex);
+            log.error("OAuth2认证失败！clientName:{}", clientName, ex);
             return ResultUtil.fail();
         }
     }
 
-    private OAuth2LoginUserVO getLoginUser(String clientName, String accessToken, String userInfoUri){
+    /**
+     * 处理OAuth2登录注册、绑定操作
+     * @param clientName
+     * @param accountInfo
+     * @return
+     * 1、登录注册：成功，返回Token，校验失败直接返回
+     * 2、绑定：返回绑定的状态
+     */
+    private OAuth2LoginUserVO getLoginUser(String clientName, OAuth2AccountInfo accountInfo){
         OAuth2LoginUserVO vo = new OAuth2LoginUserVO();
-        HttpEntity<String> codeEntity = new HttpEntity<>("", this.getDefaultHttpRequestHeaders(accessToken));
-        ResponseEntity<String> userResult;
-        try {
-            userResult = restTemplate.exchange(userInfoUri, HttpMethod.GET, codeEntity, String.class);
-        } catch (Exception ex) {
-            log.error("获取OAuth2账户信息失败！", ex );
-            return null;
-        }
-        JSONObject authUser = JSON.parseObject(userResult.getBody());
         // 登录名
-        String username = authUser.getString("login");
+        String username = accountInfo.getAccountId();
         // 是否绑定注册过
         boolean registered = false;
         // name是否被其它账户注册
         boolean otherAccountRegistered = false;
         // name是否被其它账户绑定
-        boolean otherAccountBind = false;
+        boolean otherAccountBind;
         LoginUserBean userDetails = null;
         try {
             // 当前若为登录状态，直接进行绑定社交账户
-            boolean bind = false;
             LoginUserBean loginUserBean = this.jwtAuthService.getLoginUserBean();
             if (loginUserBean != null && loginUserBean.getUser() != null) {
                 vo.setType(2);
@@ -126,26 +121,8 @@ public class OAuth2Service {
                     return vo;
                 }
 
-                // 未绑定过，进行绑定处理
-                List<UserOAuth2Client> clients = loginUserBean.getUser().getClients();
-                for (UserOAuth2Client client : clients){
-                    if (client.getClientName().equals(clientName)) {
-                        bind = true;
-                        break;
-                    }
-                }
-                if (!bind) {
-                    UserOAuth2Client registerOAuth2Client = this.userService.getRegisterOAuth2Client(clientName, username);
-                    if (clients == null) {
-                        clients = new ArrayList<>();
-                    }
-                    clients.add(registerOAuth2Client);
-                    vo.setClients(clients);
-                    String nowDateString = DateUtil.getNowDateString();
-                    Update update = Update.update("update_time", nowDateString);
-                    update.set("auth2_clients", loginUserBean.getUser().getClients());
-                    this.userRepository.updateOne(loginUserBean.getUser().getUserId(), update);
-                }
+                // 绑定OAuth2社交账户
+                this.bindOAuth2Account(clientName, vo, username, loginUserBean);
                 return vo;
             }
 
@@ -168,13 +145,14 @@ public class OAuth2Service {
         } catch (UsernameNotFoundException une) {
             registered = false;
         }
+
         if (!registered) {
             // 新注册
             log.info("用户[{}]OAuth2认证成功，未注册.", username);
             vo.setInitUserId(username);
             vo.setClientName(clientName);
-            vo.setInitUserName(authUser.getString("name"));
-            vo.setInitAvatarUrl(authUser.getString("avatar_url"));
+            vo.setInitUserName(accountInfo.getName());
+            vo.setInitAvatarUrl(accountInfo.getAvatarUrl());
         } else {
             // 社交账户已绑定，返回jwt加密token
             log.info("用户[{}]OAuth2登录成功.", username);
@@ -191,16 +169,33 @@ public class OAuth2Service {
         return vo;
     }
 
-    /** 默认请求头 */
-    private HttpHeaders getDefaultHttpRequestHeaders(String token){
-        // 请求头
-        HttpHeaders headers = new HttpHeaders();
-        MediaType mediaType = MediaType.parseMediaType("application/json; charset=UTF-8");
-        headers.setContentType(mediaType);
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        if (StringUtils.isNotBlank(token)) {
-            headers.add("Authorization", "Bearer " + token);
+    /**
+     * 绑定社交账户
+     * @param clientName
+     * @param vo
+     * @param username
+     * @param loginUserBean
+     */
+    private void bindOAuth2Account(String clientName, OAuth2LoginUserVO vo, String username, LoginUserBean loginUserBean) {
+        boolean bind = false;
+        List<UserOAuth2Client> clients = loginUserBean.getUser().getClients();
+        for (UserOAuth2Client client : clients){
+            if (client.getClientName().equals(clientName)) {
+                bind = true;
+                break;
+            }
         }
-        return headers;
+        if (!bind) {
+            UserOAuth2Client registerOAuth2Client = this.userService.getRegisterOAuth2Client(clientName, username);
+            if (clients == null) {
+                clients = new ArrayList<>();
+            }
+            clients.add(registerOAuth2Client);
+            vo.setClients(clients);
+            String nowDateString = DateUtil.getNowDateString();
+            Update update = Update.update("update_time", nowDateString);
+            update.set("auth2_clients", loginUserBean.getUser().getClients());
+            this.userRepository.updateOne(loginUserBean.getUser().getUserId(), update);
+        }
     }
 }

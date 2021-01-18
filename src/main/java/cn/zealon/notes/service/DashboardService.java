@@ -10,7 +10,7 @@ import cn.zealon.notes.vo.DashboardVO;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -54,11 +54,7 @@ public class DashboardService {
     private List<String> getClassicQuotations(){
         String[] arr = "态度决定一切,仰望星空，脚踏实地,道路艰难，唯勇者行,聪明是一种天赋，而善良是一种选择,最重要的是把要事当做要事,陷入爱河，人人都会变成诗人,青春不是年华，而是心境,生活并不公平，接受它吧,我是一个与众不同的存在,人不是为失败而生,爱所有人，信部分人，不伤害任何人,有信仰，有热情的人生值得一过"
                 .split(",");
-        List<String> list = new ArrayList<>(arr.length);
-        for(String s : arr){
-            list.add(s);
-        }
-        return list;
+        return Arrays.asList(arr);
     }
 
     /** 欢迎语 */

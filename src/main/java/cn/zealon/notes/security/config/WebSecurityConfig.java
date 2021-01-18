@@ -41,12 +41,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // 基础配置
-        http
-                .csrf().disable()
-                //.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                //.ignoringAntMatchers("/auth/**")
-                //.and()
-
+        http.csrf().disable()
                 // 跨域配置
                 .cors()
                 .configurationSource(corsConfigurationSource())

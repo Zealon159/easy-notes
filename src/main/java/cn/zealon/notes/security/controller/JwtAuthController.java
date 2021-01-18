@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 /**
+ * JWT登录认证接口
  * @author: zealon
  * @since: 2020/11/27
  */
@@ -21,6 +22,11 @@ public class JwtAuthController {
     @Autowired
     private JwtAuthService jwtAuthService;
 
+    /**
+     * 登录认证接口
+     * @param map
+     * @return
+     */
     @RequestMapping(value = "/auth/authentication")
     public Result login(@RequestBody Map<String,String> map){
         String username  = map.get("username");
@@ -33,6 +39,11 @@ public class JwtAuthController {
         return jwtAuthService.login(username, password);
     }
 
+    /**
+     * 刷新token接口
+     * @param token
+     * @return
+     */
     @RequestMapping(value = "/auth/refresh-token")
     public Result refresh(@RequestHeader("${jwt.header}") String token){
         return ResultUtil.success(jwtAuthService.refreshToken(token));
