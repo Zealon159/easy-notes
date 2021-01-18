@@ -70,6 +70,7 @@ public class OAuth2Service {
         }
 
         try {
+            // 采用策略模式处理OAuth2的交互
             AccountInfoStrategy accountInfoStrategy = accountInfoStrategyMap.get(clientName);
             // 获取访问令牌
             OAuth2AccessToken accessToken = accountInfoStrategy.getAccessToken(client, code, state);
