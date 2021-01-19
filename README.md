@@ -46,11 +46,11 @@
 - src/main/java
   - cn.zealon.notes
     - common / 公共包
-  	  - base / 抽象基类
-  	  - config / 工程配置
-  	  - exception / 自定义异常
-  	  - result / 响应结果封装
-  	  - utils / 工具类
+      - base / 抽象基类
+      - config / 工程配置
+      - exception / 自定义异常
+      - result / 响应结果封装
+      - utils / 工具类
     - controller / 控制器 
     - domain / 领域对象
     - repository / MongoDB存储
