@@ -131,7 +131,7 @@
 
 附录3.Github OAuth 应用：https://docs.github.com/en/developers/apps/authorizing-oauth-apps
 
-附录4.JWT协议标准、官网：https://tools.ietf.org/html/rfc7519、https://jwt.io/
+附录4.JWT协议标准：https://tools.ietf.org/html/rfc7519  官网：https://jwt.io/
 
 ## License
 
