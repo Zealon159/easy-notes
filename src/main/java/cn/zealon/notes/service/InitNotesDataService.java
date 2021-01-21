@@ -1,5 +1,7 @@
 package cn.zealon.notes.service;
 
+import cn.zealon.notes.common.result.Result;
+import cn.zealon.notes.common.result.ResultUtil;
 import cn.zealon.notes.common.utils.DateUtil;
 import cn.zealon.notes.domain.Category;
 import cn.zealon.notes.domain.Notes;
@@ -7,9 +9,12 @@ import cn.zealon.notes.repository.CategoryRepository;
 import cn.zealon.notes.repository.NotesRepository;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.*;
 
 /**
  * 给用户默认数据
@@ -18,6 +23,9 @@ import java.util.List;
  */
 @Service
 public class InitNotesDataService {
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -133,5 +141,17 @@ public class InitNotesDataService {
         notes.setUpdateTime(nowDateString);
         notes.setCreateTime(nowDateString);
         this.notesRepository.insert(notes);
+    }
+
+    public Result getDbInfo(){
+        Map<String,Object> result = new HashMap<>();
+        Set<String> collectionNames = this.mongoTemplate.getCollectionNames();
+        Iterator<String> iterator = collectionNames.iterator();
+        while (iterator.hasNext()) {
+            String name = iterator.next();
+            long count = this.mongoTemplate.count(Query.query(Criteria.where("")), name);
+            result.put(name, count);
+        }
+        return ResultUtil.success(result);
     }
 }

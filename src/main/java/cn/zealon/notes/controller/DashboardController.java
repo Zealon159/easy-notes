@@ -2,6 +2,7 @@ package cn.zealon.notes.controller;
 
 import cn.zealon.notes.common.result.Result;
 import cn.zealon.notes.service.DashboardService;
+import cn.zealon.notes.service.InitNotesDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,9 @@ public class DashboardController {
     @Autowired
     private DashboardService dashboardService;
 
+    @Autowired
+    private InitNotesDataService initNotesDataService;
+
     /**
      * 获取仪表盘数据
      * @return
@@ -26,5 +30,10 @@ public class DashboardController {
     @GetMapping("/summary")
     public Result getDashboardSummary(){
         return this.dashboardService.getDashboardSummary();
+    }
+
+    @GetMapping("/db-info")
+    public Result getDbInfo(){
+        return this.initNotesDataService.getDbInfo();
     }
 }
