@@ -79,7 +79,7 @@ public class OAuth2Service {
             }
 
             // 获取OAuth2账户信息
-            OAuth2AccountInfo accountInfo = accountInfoStrategy.getAccountInfo(clientName, accessToken.getAccessToken(), client.getUserInfoUri());
+            OAuth2AccountInfo accountInfo = accountInfoStrategy.getAccountInfo(clientName, accessToken, client.getUserInfoUri());
             if (accountInfo == null) {
                 return ResultUtil.fail();
             }

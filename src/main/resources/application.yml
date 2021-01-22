@@ -51,10 +51,10 @@ oauth2:
       user-authorization-uri: https://github.com/login/oauth/authorize
       user-info-uri: https://api.github.com/user
     weibo:
-      client-id: d2456e0d3f62d5838fb2
+      client-id: 922586374
       client-name: weibo
       client-name-cn: 微博
-      client-secret: 60ec6d3c4dcf47281fe06124da535faf33cb17ec
-      access-token-uri: https://github.com/login/oauth/access_token
-      user-authorization-uri: https://github.com/login/oauth/authorize
-      user-info-uri: https://api.github.com/user
+      client-secret: 16f1553320a4ac89b68b3b05655bbe55
+      access-token-uri: https://api.weibo.com/oauth2/access_token
+      user-authorization-uri: https://api.weibo.com/2/oauth2/authorize
+      user-info-uri: https://api.weibo.com/2/users/show.json

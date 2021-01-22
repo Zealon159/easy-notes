@@ -1,6 +1,10 @@
 package cn.zealon.notes.common.config;
 
 import com.google.common.collect.Lists;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -14,9 +18,15 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,10 +43,32 @@ public class RestTemplateConfig {
     @Bean("restTemplate")
     public RestTemplate restTemplate() {
         // 基于HttpClient
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
         HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
         httpComponentsClientHttpRequestFactory.setConnectTimeout(10000);
-        httpComponentsClientHttpRequestFactory.setReadTimeout(5000);
-        RestTemplate restTemplate = new RestTemplate(httpComponentsClientHttpRequestFactory);
+        httpComponentsClientHttpRequestFactory.setReadTimeout(6000);
+
+        TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
+        SSLContext sslContext = null;
+        try {
+            sslContext = org.apache.http.ssl.SSLContexts.custom()
+                    .loadTrustMaterial(null, acceptingTrustStrategy)
+                    .build();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        } catch (KeyStoreException e) {
+            e.printStackTrace();
+        }
+        SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
+
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .setSSLSocketFactory(csf)
+                .build();
+
+        requestFactory.setHttpClient(httpClient);
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
         // 乱码处理
         List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters().stream().map(httpMessageConverter -> {
             if (httpMessageConverter instanceof StringHttpMessageConverter) {

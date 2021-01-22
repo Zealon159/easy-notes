@@ -15,7 +15,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,9 +53,9 @@ public class AccountInfoStrategyGithub implements AccountInfoStrategy {
     }
 
     @Override
-    public OAuth2AccountInfo getAccountInfo(String clientName, String accessToken, String userInfoUri) {
+    public OAuth2AccountInfo getAccountInfo(String clientName, OAuth2AccessToken accessToken, String userInfoUri) {
         OAuth2AccountInfo accountInfo = new OAuth2AccountInfo();
-        HttpEntity<String> codeEntity = new HttpEntity<>("", RestUtil.getDefaultHttpRequestHeaders(accessToken));
+        HttpEntity<String> codeEntity = new HttpEntity<>("", RestUtil.getDefaultHttpRequestHeaders(accessToken.getAccessToken()));
         ResponseEntity<String> userResult;
         try {
             userResult = restTemplate.exchange(userInfoUri, HttpMethod.GET, codeEntity, String.class);

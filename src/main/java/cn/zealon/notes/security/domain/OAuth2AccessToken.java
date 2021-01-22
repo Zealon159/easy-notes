@@ -12,4 +12,5 @@ public class OAuth2AccessToken {
     private String accessToken;
     private String tokenType;
     private String scope;
+    private String uid;
 }

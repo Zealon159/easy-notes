@@ -27,5 +27,5 @@ public interface AccountInfoStrategy {
      * @param userInfoUri
      * @return
      */
-    OAuth2AccountInfo getAccountInfo(String clientName, String accessToken, String userInfoUri);
+    OAuth2AccountInfo getAccountInfo(String clientName, OAuth2AccessToken accessToken, String userInfoUri);
 }
